@@ -4,7 +4,7 @@
 
 Just select any `.md` file in Finder and press **Space**.
 
-![Preview Screenshot](screenshot.jpg)
+![Preview Screenshot](screenshot.png)
 
 ## Features
 
