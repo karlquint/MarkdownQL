@@ -499,7 +499,7 @@
 				9B94E0582F89574B00E79C24 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		9B94E0592F89574B00E79C24 /* Build configuration list for PBXNativeTarget "MarkdownQL" */ = {
 			isa = XCConfigurationList;
@@ -508,7 +508,7 @@
 				9B94E05B2F89574B00E79C24 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		9B94E0712F8959A400E79C24 /* Build configuration list for PBXNativeTarget "MarkdownQLExtension" */ = {
 			isa = XCConfigurationList;
@@ -517,7 +517,7 @@
 				9B94E0732F8959A400E79C24 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};
