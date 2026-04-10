@@ -35,6 +35,20 @@ struct MarkdownAttributedRenderer {
         while i < lines.count {
             let line = lines[i]
 
+            // Table – check first before anything else can intercept pipe characters
+            if i + 1 < lines.count && isTableSeparator(lines[i + 1]) {
+                var tableLines: [String] = [line]
+                i += 2 // skip header + separator line
+                while i < lines.count
+                    && !lines[i].trimmingCharacters(in: .whitespaces).isEmpty
+                    && lines[i].contains("|") {
+                    tableLines.append(lines[i])
+                    i += 1
+                }
+                result.append(renderTable(tableLines))
+                continue
+            }
+
             // Fenced code block
             if line.hasPrefix("```") {
                 var codeLines: [String] = []
@@ -102,18 +116,6 @@ struct MarkdownAttributedRenderer {
                     n += 1
                 }
                 result.append(orderedList(items))
-                continue
-            }
-
-            // Table (header row followed by separator row |---|---|)
-            if i + 1 < lines.count && isTableSeparator(lines[i + 1]) {
-                var tableLines: [String] = [line]
-                i += 2 // skip header + separator
-                while i < lines.count && lines[i].contains("|") && !lines[i].trimmingCharacters(in: .whitespaces).isEmpty {
-                    tableLines.append(lines[i])
-                    i += 1
-                }
-                result.append(renderTable(tableLines))
                 continue
             }
 
