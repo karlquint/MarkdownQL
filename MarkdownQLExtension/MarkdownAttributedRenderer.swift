@@ -101,6 +101,18 @@ struct MarkdownAttributedRenderer {
                 continue
             }
 
+            // Table (header row followed by separator row |---|---|)
+            if i + 1 < lines.count && isTableSeparator(lines[i + 1]) {
+                var tableLines: [String] = [line]
+                i += 2 // skip header + separator
+                while i < lines.count && lines[i].contains("|") && !lines[i].trimmingCharacters(in: .whitespaces).isEmpty {
+                    tableLines.append(lines[i])
+                    i += 1
+                }
+                result.append(renderTable(tableLines))
+                continue
+            }
+
             // Empty line → spacing
             if line.trimmingCharacters(in: .whitespaces).isEmpty {
                 result.append(NSAttributedString(string: "\n"))
@@ -391,5 +403,91 @@ struct MarkdownAttributedRenderer {
 
     private static func isOLItem(_ line: String) -> Bool {
         line.range(of: #"^\d+\.\s"#, options: .regularExpression) != nil
+    }
+
+    private static func isTableSeparator(_ line: String) -> Bool {
+        let t = line.trimmingCharacters(in: .whitespaces)
+        guard t.contains("-") else { return false }
+        let stripped = t
+            .replacingOccurrences(of: "|", with: "")
+            .replacingOccurrences(of: "-", with: "")
+            .replacingOccurrences(of: ":", with: "")
+            .replacingOccurrences(of: " ", with: "")
+        return stripped.isEmpty
+    }
+
+    private static func parseTableCells(_ line: String) -> [String] {
+        var s = line.trimmingCharacters(in: .whitespaces)
+        if s.hasPrefix("|") { s = String(s.dropFirst()) }
+        if s.hasSuffix("|") { s = String(s.dropLast()) }
+        return s.components(separatedBy: "|").map { $0.trimmingCharacters(in: .whitespaces) }
+    }
+
+    private static func renderTable(_ lines: [String]) -> NSAttributedString {
+        guard !lines.isEmpty else { return NSAttributedString() }
+
+        let headerCells = parseTableCells(lines[0])
+        let numCols = max(headerCells.count, 1)
+        let dataRows = lines.dropFirst()
+
+        let table = NSTextTable()
+        table.numberOfColumns = numCols
+        table.layoutAlgorithm = .automatic
+        table.collapsesBorders = true
+        table.hidesEmptyCells = false
+
+        let result = NSMutableAttributedString()
+        var headerBGColor: NSColor { NSColor(white: 0.5, alpha: 0.15) }
+        var evenBGColor:   NSColor { NSColor(white: 0.5, alpha: 0.05) }
+        var borderColor:   NSColor { .separatorColor }
+
+        func cell(text: String, row: Int, col: Int, isHeader: Bool) -> NSAttributedString {
+            let block = NSTextTableBlock(
+                table: table,
+                startingRow: row, rowSpan: 1,
+                startingColumn: col, columnSpan: 1
+            )
+            block.backgroundColor = isHeader ? headerBGColor : (row % 2 == 0 ? .clear : evenBGColor)
+            block.setBorderColor(borderColor)
+            for edge in [NSRectEdge.minX, .maxX, .minY, .maxY] {
+                block.setWidth(1,   type: .absoluteValueType, for: .border,  edge: edge)
+                block.setWidth(6,   type: .absoluteValueType, for: .padding, edge: edge)
+            }
+
+            let ps = NSMutableParagraphStyle()
+            ps.textBlocks = [block]
+            ps.paragraphSpacing = 0
+            ps.paragraphSpacingBefore = 0
+
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: isHeader ? NSFont.systemFont(ofSize: 13, weight: .semibold)
+                                : NSFont.systemFont(ofSize: 13, weight: .regular),
+                .foregroundColor: textColor,
+                .paragraphStyle: ps
+            ]
+            let base = attrs
+            let cellStr = NSMutableAttributedString()
+            cellStr.append(inlineMarkdown(text, baseAttributes: base))
+            cellStr.append(NSAttributedString(string: "\n", attributes: attrs))
+            return cellStr
+        }
+
+        // Header row
+        for (col, text) in headerCells.enumerated() {
+            result.append(cell(text: text, row: 0, col: col, isHeader: true))
+        }
+
+        // Data rows
+        for (rowIndex, line) in dataRows.enumerated() {
+            let cells = parseTableCells(line)
+            for col in 0..<numCols {
+                let text = col < cells.count ? cells[col] : ""
+                result.append(cell(text: text, row: rowIndex + 1, col: col, isHeader: false))
+            }
+        }
+
+        // Spacing after table
+        result.append(NSAttributedString(string: "\n"))
+        return result
     }
 }
