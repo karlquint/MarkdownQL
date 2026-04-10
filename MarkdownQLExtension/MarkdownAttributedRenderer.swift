@@ -25,7 +25,11 @@ struct MarkdownAttributedRenderer {
 
     static func render(_ markdown: String) -> NSAttributedString {
         let result = NSMutableAttributedString()
-        let lines = markdown.components(separatedBy: "\n")
+        // Normalize line endings (\r\n and \r → \n)
+        let normalized = markdown
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+        let lines = normalized.components(separatedBy: "\n")
         var i = 0
 
         while i < lines.count {
@@ -128,6 +132,8 @@ struct MarkdownAttributedRenderer {
                 if headerLevel(l) != nil { break }
                 if l.hasPrefix(">") || l.hasPrefix("```") { break }
                 if isHR(l) || isULItem(l) || isOLItem(l) { break }
+                if i + 1 < lines.count && isTableSeparator(lines[i + 1]) { break }
+                if isTableSeparator(l) { break }
                 paraLines.append(l)
                 i += 1
             }
