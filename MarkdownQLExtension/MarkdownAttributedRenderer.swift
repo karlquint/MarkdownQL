@@ -426,68 +426,76 @@ struct MarkdownAttributedRenderer {
     private static func renderTable(_ lines: [String]) -> NSAttributedString {
         guard !lines.isEmpty else { return NSAttributedString() }
 
-        let headerCells = parseTableCells(lines[0])
-        let numCols = max(headerCells.count, 1)
-        let dataRows = lines.dropFirst()
+        let allRows  = lines.map { parseTableCells($0) }
+        let numCols  = allRows.map { $0.count }.max() ?? 1
 
-        let table = NSTextTable()
-        table.numberOfColumns = numCols
-        table.layoutAlgorithm = .automatic
-        table.collapsesBorders = true
-        table.hidesEmptyCells = false
+        // Calculate minimum column width based on content
+        var colWidths = Array(repeating: 3, count: numCols)
+        for row in allRows {
+            for (col, cell) in row.enumerated() where col < numCols {
+                colWidths[col] = max(colWidths[col], cell.count)
+            }
+        }
+
+        let monoFont      = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+        let monoFontBold  = NSFont.monospacedSystemFont(ofSize: 13, weight: .semibold)
+        let headerBG      = NSColor(white: 0.5, alpha: 0.13)
+        let altRowBG      = NSColor(white: 0.5, alpha: 0.05)
+
+        let ps = NSMutableParagraphStyle()
+        ps.paragraphSpacing = 0
+        ps.paragraphSpacingBefore = 0
 
         let result = NSMutableAttributedString()
-        var headerBGColor: NSColor { NSColor(white: 0.5, alpha: 0.15) }
-        var evenBGColor:   NSColor { NSColor(white: 0.5, alpha: 0.05) }
-        var borderColor:   NSColor { .separatorColor }
-
-        func cell(text: String, row: Int, col: Int, isHeader: Bool) -> NSAttributedString {
-            let block = NSTextTableBlock(
-                table: table,
-                startingRow: row, rowSpan: 1,
-                startingColumn: col, columnSpan: 1
-            )
-            block.backgroundColor = isHeader ? headerBGColor : (row % 2 == 0 ? .clear : evenBGColor)
-            block.setBorderColor(borderColor)
-            for edge in [NSRectEdge.minX, .maxX, .minY, .maxY] {
-                block.setWidth(1,   type: .absoluteValueType, for: .border,  edge: edge)
-                block.setWidth(6,   type: .absoluteValueType, for: .padding, edge: edge)
-            }
-
-            let ps = NSMutableParagraphStyle()
-            ps.textBlocks = [block]
-            ps.paragraphSpacing = 0
-            ps.paragraphSpacingBefore = 0
-
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: isHeader ? NSFont.systemFont(ofSize: 13, weight: .semibold)
-                                : NSFont.systemFont(ofSize: 13, weight: .regular),
-                .foregroundColor: textColor,
-                .paragraphStyle: ps
-            ]
-            let base = attrs
-            let cellStr = NSMutableAttributedString()
-            cellStr.append(inlineMarkdown(text, baseAttributes: base))
-            cellStr.append(NSAttributedString(string: "\n", attributes: attrs))
-            return cellStr
-        }
-
-        // Header row
-        for (col, text) in headerCells.enumerated() {
-            result.append(cell(text: text, row: 0, col: col, isHeader: true))
-        }
-
-        // Data rows
-        for (rowIndex, line) in dataRows.enumerated() {
-            let cells = parseTableCells(line)
-            for col in 0..<numCols {
-                let text = col < cells.count ? cells[col] : ""
-                result.append(cell(text: text, row: rowIndex + 1, col: col, isHeader: false))
-            }
-        }
-
-        // Spacing after table
         result.append(NSAttributedString(string: "\n"))
+
+        for (rowIndex, row) in allRows.enumerated() {
+            let isHeader = rowIndex == 0
+
+            // Build padded row string
+            var rowStr = "│"
+            for col in 0..<numCols {
+                let text    = col < row.count ? row[col] : ""
+                let padded  = " " + text + String(repeating: " ", count: colWidths[col] - text.count + 1)
+                rowStr     += padded + "│"
+            }
+
+            let rowAttrs: [NSAttributedString.Key: Any] = [
+                .font:            isHeader ? monoFontBold : monoFont,
+                .foregroundColor: textColor,
+                .backgroundColor: isHeader ? headerBG : (rowIndex % 2 == 1 ? altRowBG : NSColor.clear),
+                .paragraphStyle:  ps
+            ]
+            result.append(NSAttributedString(string: rowStr + "\n", attributes: rowAttrs))
+
+            // Separator line after header
+            if isHeader {
+                var sep = "├"
+                for col in 0..<numCols {
+                    sep += String(repeating: "─", count: colWidths[col] + 2)
+                    sep += col < numCols - 1 ? "┼" : "┤"
+                }
+                let sepAttrs: [NSAttributedString.Key: Any] = [
+                    .font:            monoFont,
+                    .foregroundColor: separatorColor,
+                    .paragraphStyle:  ps
+                ]
+                result.append(NSAttributedString(string: sep + "\n", attributes: sepAttrs))
+            }
+        }
+
+        // Bottom border
+        var bottom = "└"
+        for col in 0..<numCols {
+            bottom += String(repeating: "─", count: colWidths[col] + 2)
+            bottom += col < numCols - 1 ? "┴" : "┘"
+        }
+        let borderAttrs: [NSAttributedString.Key: Any] = [
+            .font:            monoFont,
+            .foregroundColor: separatorColor,
+            .paragraphStyle:  ps
+        ]
+        result.append(NSAttributedString(string: bottom + "\n\n", attributes: borderAttrs))
         return result
     }
 }
