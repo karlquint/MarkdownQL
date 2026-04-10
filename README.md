@@ -1,54 +1,54 @@
 # MarkdownQL
 
-**Quick Look Plugin für macOS** – zeigt `.md` Markdown-Dateien im Finder formatiert an.
+**Quick Look Plugin for macOS** – renders `.md` Markdown files directly in Finder Preview.
 
-Einfach eine `.md`-Datei im Finder auswählen und **Leertaste** drücken.
+Just select any `.md` file in Finder and press **Space**.
 
 ![Preview Screenshot](screenshot.png)
 
 ## Features
 
-- Überschriften H1–H6
-- **Fett**, *Kursiv*, ~~Durchgestrichen~~
-- `Inline-Code` und Code-Blöcke
+- Headings H1–H6
+- **Bold**, *Italic*, ~~Strikethrough~~
+- `Inline code` and fenced code blocks
 - Blockquotes
-- Ungeordnete und geordnete Listen
+- Unordered and ordered lists
 - Links
-- Horizontale Trennlinien
-- Dark Mode automatisch
+- Horizontal rules
+- Dark Mode support (automatic)
 
 ## Installation
 
-### Option 1 – Direktdownload (empfohlen)
+### Option 1 – Direct Download (recommended)
 
-1. Neueste Version unter [Releases](../../releases) herunterladen (`MarkdownQL.zip`)
-2. ZIP entpacken → `MarkdownQL.app` in den Ordner **Programme** ziehen
-3. App **einmal starten** (Rechtsklick → Öffnen → Trotzdem öffnen)
-4. App kann danach im Hintergrund bleiben oder beendet werden
+1. Download the latest release from [Releases](../../releases) (`MarkdownQL.zip`)
+2. Unzip and drag `MarkdownQL.app` into your **Applications** folder
+3. **Launch the app once** (Right-click → Open → Open Anyway)
+4. The app can stay in the background or be closed afterwards
 
-Das war's – ab sofort werden `.md`-Dateien im Finder mit Leertaste formatiert angezeigt.
+That's it – `.md` files will now show a formatted preview in Finder when you press Space.
 
-> **Hinweis:** Beim ersten Start erscheint eine macOS-Sicherheitswarnung, weil die App nicht im App Store ist. Rechtsklick → Öffnen → "Trotzdem öffnen" reicht einmalig aus.
+> **Note:** On first launch macOS will show a security warning because the app is not from the App Store. Right-click → Open → "Open Anyway" is only needed once.
 
-### Option 2 – Selbst bauen (Xcode)
+### Option 2 – Build from Source (Xcode)
 
 ```bash
 git clone https://github.com/DEIN-USERNAME/MarkdownQL.git
 cd MarkdownQL
-open MarkdownQL/MarkdownQL.xcodeproj
+open MarkdownQL.xcodeproj
 ```
 
-In Xcode: **⌘ + R** → Finder starten → `.md`-Datei + Leertaste
+In Xcode: **⌘ + R** → Finder launches → select a `.md` file and press Space
 
-## Systemvoraussetzungen
+## Requirements
 
-- macOS 12 (Monterey) oder neuer
-- Keine weiteren Abhängigkeiten
+- macOS 12 Monterey or later
+- No external dependencies
 
-## Deinstallation
+## Uninstall
 
-`MarkdownQL.app` aus dem Programme-Ordner löschen – die Extension wird automatisch entfernt.
+Delete `MarkdownQL.app` from your Applications folder – the extension is removed automatically.
 
-## Lizenz
+## License
 
-MIT License – frei verwendbar und veränderbar.
+MIT License – free to use and modify.
