@@ -2,8 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
 
                 // Header
                 VStack(spacing: 12) {
@@ -102,9 +101,8 @@ struct ContentView: View {
                 }
                 .padding(20)
                 .frame(maxWidth: 460, alignment: .leading)
-            }
         }
-        .frame(width: 500, height: 680)
+        .frame(width: 500)
     }
 }
 
